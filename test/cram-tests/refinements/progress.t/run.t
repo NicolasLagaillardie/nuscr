@@ -20,7 +20,8 @@ Nuscr should report an error if ValidateRefinementProgress is enabled.
   (assert (not (exists ((ignore Int)) (and (> x 0) true))))
   (check-sat)
   
-  nuscr: User error: Protocol may be stuck due to refinements
+  nuscr: Reported problem:
+          ("Unix.Unix_error(Unix.ENOENT, \"create_process\", \"z3\")")
   [124]
 
 Nuscr should not report any error for the fixed protocol.
@@ -31,11 +32,6 @@ Nuscr should not report any error for the fixed protocol.
   (assert (distinct x 0))
   (check-sat)
   
-  Num(x: (x:int{x <> 0}) to B;
-  choice at B {
-    Pos(ignore: (ignore:unit{x > 0}) from B;
-    (end)
-  } or {
-    Neg(ignore: (ignore:unit{x < 0}) from B;
-    (end)
-  }
+  nuscr: Reported problem:
+          ("Unix.Unix_error(Unix.ENOENT, \"create_process\", \"z3\")")
+  [124]

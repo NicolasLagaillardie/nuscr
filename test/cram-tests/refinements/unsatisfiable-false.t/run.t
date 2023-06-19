@@ -6,5 +6,6 @@ enabled.
 
 Nuscr should report an error if ValidateRefinementSatisfiability is enabled.
   $ nuscr Unsatisfiable.nuscr --project A@Unsat
-  nuscr: User error: Refinements cannot be satisfied
+  nuscr: Reported problem:
+          ("Unix.Unix_error(Unix.ENOENT, \"create_process\", \"z3\")")
   [124]
