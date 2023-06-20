@@ -4,20 +4,31 @@ open LiteratureSyntax
 open Globaltype
 open Localtype
 
+(* Extract global type *)
 let of_gtype gtype =
   let gtype = LiteratureSyntax.from_gtype gtype in
   match gtype with
+  (* If the end of the protocol is reached, return everything from start *)
   | EndG -> GlobalType.make ~start:(-1) ()
+  (* For evereything else *)
   | gtype ->
       let protobuf_gtype = GlobalType.make () in
       let rec aux tyvars idx pb_gtype = function
+        (* If this is a the end of the action, return tuple of index and
+           type *)
         | [] -> (idx, pb_gtype)
+        (* If there is a branch *)
         | BranchG {g_br_from= from_role; g_br_to= to_role; g_br_cont= conts}
           :: rest ->
+            (* Get sending role *)
             let from_role = RoleName.user from_role in
+            (* Get receving role *)
             let to_role = RoleName.user to_role in
+            (* Get continuation and its index *)
             let add_cont (idx, pb_gtype) (label, _, cont) =
+              (* Get label of message *)
               let label = LabelName.user label in
+              (* Create Send action *)
               let action_send =
                 GlobalAction.make ~idx
                   ~type':GlobalAction.GlobalActionType.SEND ~from_role
@@ -26,18 +37,25 @@ let of_gtype gtype =
                     [GlobalAction.Index.make ~next:(idx + 1) ~label ()]
                   ()
               in
+              (* Create protobuf type for Send type *)
               let pb_gtype =
                 { pb_gtype with
                   GlobalType.actions=
                     action_send :: pb_gtype.GlobalType.actions }
               in
+              (* Increase index *)
               let idx = idx + 1 in
+              (* Create next index *)
               let next_idx =
                 match cont with
+                (* If there is no continuation, return -1 *)
                 | EndG -> -1
+                (* If this is the end of the loop *)
                 | TVarG tv -> Map.find_exn tyvars tv
+                (* Else *)
                 | _ -> idx + 1
               in
+              (* Create Recv action *)
               let action_recv =
                 GlobalAction.make ~idx
                   ~type':GlobalAction.GlobalActionType.RECV ~from_role
@@ -46,35 +64,44 @@ let of_gtype gtype =
                     [GlobalAction.Index.make ~next:next_idx ~label ()]
                   ()
               in
+              (* Increase index *)
               let idx = idx + 1 in
+              (* Create protobuf type for Recv type *)
               let pb_gtype =
                 { pb_gtype with
                   GlobalType.actions=
                     action_recv :: pb_gtype.GlobalType.actions }
               in
+              (* Match the continuation with either an end, a rec/continue or
+                 an actual cont *)
               match cont with
               | EndG | TVarG _ -> aux tyvars idx pb_gtype rest
               | cont -> aux tyvars idx pb_gtype (cont :: rest)
             in
             List.fold ~f:add_cont ~init:(idx, pb_gtype) conts
+        (* If there is a recursion *)
         | MuG (tvar, g) :: rest ->
             let tyvars =
+              (* Check if the branch is not duplicated *)
               match Map.add tyvars ~key:tvar ~data:idx with
               | `Ok tyvars -> tyvars
               | `Duplicate ->
                   Err.unimpl ~here:[%here] "alpha-renaming for tyvars"
             in
+            (* Loop back to the aux function *)
             aux tyvars idx pb_gtype (g :: rest)
         | TVarG _ :: _ ->
             Err.violation ~here:[%here] "TVarG should not appear here"
         | EndG :: _ ->
             Err.violation ~here:[%here] "EndG should not appear here"
       in
+      (* The final output *)
       let _, output =
         aux (Map.empty (module TypeVariableName)) 0 protobuf_gtype [gtype]
       in
       output
 
+(* Extract local type *)
 let of_ltype ltype =
   let ltype = LiteratureSyntax.from_ltype ltype in
   match ltype with

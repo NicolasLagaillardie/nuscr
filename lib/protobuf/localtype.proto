@@ -13,6 +13,12 @@ message LocalAction {
   LocalActionType type = 2;
   string partner_role = 3;
   repeated Index continuations = 4;
+  string clock = 5;
+  int64 lower_bound = 6;
+  bool include_lb = 7;
+  int64 upper_bound = 8;
+  bool include_ub = 9;
+  string reset_clock = 10;
 }
 
 message LocalType {

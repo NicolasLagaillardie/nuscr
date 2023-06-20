@@ -60,3 +60,4 @@ When projected on B, the recursion variable `count` should not appear.
     Num(curr: (curr:int{curr = count}) from A;
     continue X;
   }
+

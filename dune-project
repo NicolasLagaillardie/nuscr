@@ -13,7 +13,7 @@
 
 (license GPL-3.0-or-later)
 
-(authors "Francisco Ferreira" "Fangyi Zhou" "Simon Castellan" "Benito Echarren")
+(authors "Francisco Ferreira" "Fangyi Zhou" "Simon Castellan" "Benito Echarren" "Nicolas Lagaillardie")
 
 (maintainers "Francisco Ferreira")
 
