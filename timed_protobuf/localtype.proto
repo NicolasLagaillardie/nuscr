@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+message LocalAction {
+  message Index {
+    string label = 1;
+    int32 next = 2;
+  }
+  int32 idx = 1;
+  enum LocalActionType {
+    SEND = 0;
+    RECV = 1;
+  };
+  LocalActionType type = 2;
+  string partner_role = 3;
+  repeated Index continuations = 4;
+  string clock = 5;
+  int64 lower_bound = 6;
+  bool include_lb = 7;
+  int64 upper_bound = 8;
+  bool include_ub = 9;
+  bool reset_clock = 10;
+}
+
+message LocalType {
+  int32 start = 1;
+  repeated LocalAction actions = 2;
+}
