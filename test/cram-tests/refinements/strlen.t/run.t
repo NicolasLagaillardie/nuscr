@@ -34,6 +34,7 @@ string.
     }
   }
 
+
 PasswordManager2 has a too short initial password, and an error is expected.
 
   $ nuscr PasswordManager2.nuscr --project C@PasswordManager --show-solver-queries

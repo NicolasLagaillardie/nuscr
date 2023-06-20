@@ -794,3 +794,5 @@ Show HigherLower FSM and State variables.
   
   in
   runState0 initState
+ start(n: (n:int{0 <= n && n < 100}) to B;
+

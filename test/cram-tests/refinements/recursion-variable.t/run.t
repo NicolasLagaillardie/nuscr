@@ -24,6 +24,7 @@ The protocol with recursion variable should be well-formed.
 
 
 
+
   $ nuscr Recursion.nuscr --project A@Recursion2 --show-solver-queries
   (declare-const count Int)
   (declare-const freshvar$2 Int)
@@ -46,6 +47,7 @@ The protocol with recursion variable should be well-formed.
     Num(curr: (curr:int{curr = count}) to B;
     continue X [count + 1];
   }
+
 
 When projected on B, the recursion variable `count` should not appear.
 
