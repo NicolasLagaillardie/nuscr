@@ -78,6 +78,33 @@ type message =
   | MessageName of LabelName.t
 [@@deriving eq, ord]
 
+(* Definition of time constraints *)
+type time_const = 
+  | ConstInt of {
+      left_cons: int ;
+      incl_left_cons: bool ;
+      right_cons: int ;
+      incl_right_cons: bool ;
+    }
+  | ConstInfRight of {
+      left_cons: int ;
+      incl_left_cons: bool ;
+    }
+  | ConstInfLeft of {
+      right_cons: int ;
+      incl_right_cons: bool ;
+    }
+  | ConstInfBoth
+[@@deriving eq, ord]
+
+(* Definition of reset predicate *)
+type reset_clock = 
+  | ResetClock of {
+      clock: ClockName ;
+    }
+  | NoReset
+[@@deriving eq, ord]
+
 let show_message = function
   | Message {name; payload} ->
       sprintf "%s(%s)" (LabelName.user name)
@@ -111,11 +138,22 @@ type global_interaction = raw_global_interaction located
 [@@deriving show {with_path= false}, sexp_of]
 
 and raw_global_interaction =
-  | MessageTransfer of
-      { message: message
-      ; from_role: RoleName.t
-      ; to_roles: RoleName.t list
-      ; ann: annotation option }
+| MessageTransfer of
+    {
+      message: message ;
+      from_role: RoleName.t ;
+      to_roles: RoleName.t list ;
+      ann: annotation option ;
+    }
+  | TimeMessageTransfer of
+      {
+        message: message ;
+        from_role: RoleName.t ;
+        to_roles: RoleName.t ;
+        clock: ClockName ;
+        time_const: time_const ;
+        reset_clock: reset_clock ;
+      }
   (* recursion variable, protocol *)
   | Recursion of TypeVariableName.t * rec_var list * global_interaction list
   | Continue of TypeVariableName.t * expr list

@@ -36,7 +36,7 @@ type payloadt =
 [@@deriving eq, ord, sexp_of, show]
 
 type message =
-  | Message of {name: LabelName.t; payload: payloadt list}
+  | Message of { name: LabelName.t; payload: payloadt list }
   | MessageName of LabelName.t
 [@@deriving eq, ord, sexp_of, show]
 

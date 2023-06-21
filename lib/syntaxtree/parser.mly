@@ -35,6 +35,11 @@
 %token TRUE_KW
 %token FALSE_KW
 
+(* For timed protocols *)
+%token USING_KW
+%token WITHIN_KW
+%token RESET_KW
+
 (* keywords from Scribble.g with original comments *)
 %token PROTOCOL_KW
 %token GLOBAL_KW
@@ -153,7 +158,8 @@ let global_protocol_block ==
 let global_interaction == located(raw_global_interaction)
 
 let raw_global_interaction ==
-  global_message_transfer
+  | global_message_transfer
+  | time_global_message_transfer
   | global_recursion
   | global_continue
   | global_choice
@@ -220,6 +226,50 @@ let global_message_transfer ==
       }
   }
 
+let time_global_message_transfer ==
+  msg = message ; FROM_KW ; frn = rolename ;
+  TO_KW ; trn = rolename ;
+  WITHIN_KW ; t_const = time_constraints ; USING_KW ;
+  clock = clockname ; RESET_KW ; rst_clock = reset_clock ; SEMICOLON ;
+  {
+    TimeMessageTransfer
+      {
+        message = msg ;
+        from_role = frn ;
+        to_role = trn ;
+        clock = clock ;
+        time_const = t_const ;
+        reset_clock = rst_clock ;
+      }
+  }
+
+(* For time constraints *)
+let time_constraints ==
+  (* [n, m] *)
+  | LSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; RSQUARE ; { ConstInt { left_cons = left_cons, incl_left_cons = true, right_cons = right_cons, incl_right_cons = true } }
+  (* ]n, m] *)
+  | RSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; RSQUARE ; { ConstInt { left_cons = left_cons, incl_left_cons = false, right_cons, incl_right_cons = true } }
+  (* [n, m[ *)
+  | LSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; LSQUARE ; { ConstInt { left_cons = left_cons, incl_left_cons = true, right_cons, incl_right_cons = false } }
+  (* ]n, m[ *)
+  | RSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; LSQUARE ; { ConstInt { left_cons = left_cons, incl_left_cons = false, right_cons, incl_right_cons = false } }
+  (* [n, ++[ *)
+  | LSQUARE ; left_cons = INT ; COLON ; PLUS ; PLUS ; LSQUARE ; { ConstInfRight { left_cons = left_cons, incl_left_cons = true } }
+  (* ]n, ++[ *)
+  | RSQUARE ; left_cons = INT ; COLON ; PLUS ; PLUS ; LSQUARE ; { ConstInfRight { left_cons = left_cons, incl_left_cons = false } }
+  (* ]--, m] *)
+  | RSQUARE ; MINUS ; MINUS ; COLON ; right_cons = INT ; RSQUARE ; { ConstInfLeft { right_cons = right_cons, incl_right_cons = true } }
+  (* ]--, m[ *)
+  | RSQUARE ; MINUS ; MINUS ; COLON ; right_cons = INT ; LSQUARE ; { ConstInfLeft { right_cons = right_cons, incl_right_cons = false } }
+  (* ]--, ++[ *)
+  | RSQUARE ; MINUS ; MINUS ; COLON ; PLUS ; PLUS ; LSQUARE ; { ConstInfBoth }
+
+(* Whether to reset clock *)
+let reset_clock ==
+  | LPAR ; RPAR ; { NoReset }
+  | LPAR ; clock = INT ; RPAR ; { ResetClock { clock = clock } }
+
+
 (* we have a qname because that's what fixme comments says in the
    Scribble parser *)
 let message ==
@@ -230,9 +280,11 @@ let message ==
 let message_signature ==
   (* LPAR ; payload ; RPAR *)
   | nm = labelname ; LPAR ; pars=separated_list(COMMA, payload_el) ; RPAR ;
-      { Message { name = nm
-                ; payload = pars
-                }
+      {
+        Message {
+          name = nm ;
+          payload = pars ;
+        }
       }
 
 let payload_el ==
@@ -268,6 +320,9 @@ let tyvarname ==
 
 let labelname ==
   x = raw_name; { LabelName.create x (Loc.create $loc) }
+
+let clockname ==
+  x = raw_name; { ClockName.create x (Loc.create $loc) }
 
 let create_var(x) ==
   ~ = x; { VariableName.create x (Loc.create $loc) }
