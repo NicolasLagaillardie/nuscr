@@ -8,3 +8,5 @@ _build/
 
 # website
 _site
+
+.vscode
