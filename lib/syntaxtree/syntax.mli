@@ -48,6 +48,7 @@ type rec_var =
   {var: VariableName.t; roles: RoleName.t list; ty: payloadt; init: expr}
 [@@deriving show {with_path= false}, sexp_of]
 
+(* Regular protocol *)
 type global_interaction = raw_global_interaction located
 [@@deriving show {with_path= false}, sexp_of]
 
@@ -85,4 +86,48 @@ type scr_module =
   { pragmas: Pragma.pragmas
   ; nested_protocols: global_protocol list
   ; protocols: global_protocol list }
+[@@deriving show {with_path= false}]
+
+(* Timed interactions and global protocol *)
+type timed_global_interaction = timed_raw_global_interaction located
+[@@deriving show {with_path= false}, sexp_of]
+
+and timed_raw_global_interaction =
+  | TimeMessageTransfer of
+      {
+        message: message ;
+        from_role: RoleName.t ;
+        to_roles: RoleName.t ;
+        clock: ClockName ;
+        time_const: time_const ;
+        reset_clock: reset_clock ;
+      }
+  (* recursion variable, protocol *)
+  | Recursion of TypeVariableName.t * rec_var list * timed_global_interaction list
+  | Continue of TypeVariableName.t * expr list
+  (* role, protocol options *)
+  | Choice of RoleName.t * timed_global_interaction list list
+  (* protocol * roles *)
+  | Do of ProtocolName.t * RoleName.t list * annotation option
+  (* caller * protocol * roles *)
+  | Calls of
+      RoleName.t * ProtocolName.t * RoleName.t list * annotation option
+[@@deriving show {with_path= false}]
+
+type timed_global_protocol = timed_raw_global_protocol located
+[@@deriving show {with_path= false}, sexp_of]
+
+and timed_raw_global_protocol =
+  { name: ProtocolName.t
+  ; roles: RoleName.t list
+  ; split_roles: RoleName.t list * RoleName.t list
+  ; nested_protocols: timed_global_protocol list
+  ; interactions: timed_global_interaction list
+  ; ann: annotation option }
+[@@deriving show {with_path= false}, sexp_of]
+
+type timed_scr_module =
+  { pragmas: Pragma.pragmas
+  ; nested_protocols: timed_global_protocol list
+  ; protocols: timed_global_protocol list }
 [@@deriving show {with_path= false}]

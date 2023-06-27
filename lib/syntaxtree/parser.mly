@@ -228,7 +228,7 @@ let global_message_transfer ==
 
 let time_global_message_transfer ==
   msg = message ; FROM_KW ; frn = rolename ;
-  TO_KW ; trn = rolename ;
+  TO_KW ; trns = separated_nonempty_list(COMMA, rolename) ;
   WITHIN_KW ; t_const = time_constraints ; USING_KW ;
   clock = clockname ; RESET_KW ; rst_clock = reset_clock ; SEMICOLON ;
   {
@@ -236,7 +236,7 @@ let time_global_message_transfer ==
       {
         message = msg ;
         from_role = frn ;
-        to_role = trn ;
+        to_roles = trn ;
         clock = clock ;
         time_const = t_const ;
         reset_clock = rst_clock ;
@@ -246,21 +246,69 @@ let time_global_message_transfer ==
 (* For time constraints *)
 let time_constraints ==
   (* [n, m] *)
-  | LSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; RSQUARE ; { ConstInt { left_cons = left_cons, incl_left_cons = true, right_cons = right_cons, incl_right_cons = true } }
+  | LSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; RSQUARE ; {
+      ConstInt {
+        left_cons = left_cons,
+        incl_left_cons = true,
+        right_cons = right_cons,
+        incl_right_cons = true,
+      }
+    }
   (* ]n, m] *)
-  | RSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; RSQUARE ; { ConstInt { left_cons = left_cons, incl_left_cons = false, right_cons, incl_right_cons = true } }
+  | RSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; RSQUARE ; {
+      ConstInt {
+        left_cons = left_cons,
+        incl_left_cons = false,
+        right_cons = right_cons,
+        incl_right_cons = true,
+      }
+    }
   (* [n, m[ *)
-  | LSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; LSQUARE ; { ConstInt { left_cons = left_cons, incl_left_cons = true, right_cons, incl_right_cons = false } }
+  | LSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; LSQUARE ; {
+      ConstInt {
+        left_cons = left_cons,
+        incl_left_cons = true,
+        right_cons = right_cons,
+        incl_right_cons = false,
+      }
+    }
   (* ]n, m[ *)
-  | RSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; LSQUARE ; { ConstInt { left_cons = left_cons, incl_left_cons = false, right_cons, incl_right_cons = false } }
+  | RSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; LSQUARE ; {
+      ConstInt {
+        left_cons = left_cons,
+        incl_left_cons = false,
+        right_cons = right_cons,
+        incl_right_cons = false,
+      }
+    }
   (* [n, ++[ *)
-  | LSQUARE ; left_cons = INT ; COLON ; PLUS ; PLUS ; LSQUARE ; { ConstInfRight { left_cons = left_cons, incl_left_cons = true } }
+  | LSQUARE ; left_cons = INT ; COLON ; PLUS ; PLUS ; LSQUARE ; {
+      ConstInfRight {
+        left_cons = left_cons,
+        incl_left_cons = true
+      }
+    }
   (* ]n, ++[ *)
-  | RSQUARE ; left_cons = INT ; COLON ; PLUS ; PLUS ; LSQUARE ; { ConstInfRight { left_cons = left_cons, incl_left_cons = false } }
+  | RSQUARE ; left_cons = INT ; COLON ; PLUS ; PLUS ; LSQUARE ; {
+      ConstInfRight {
+        left_cons = left_cons,
+        incl_left_cons = false
+      }
+    }
   (* ]--, m] *)
-  | RSQUARE ; MINUS ; MINUS ; COLON ; right_cons = INT ; RSQUARE ; { ConstInfLeft { right_cons = right_cons, incl_right_cons = true } }
+  | RSQUARE ; MINUS ; MINUS ; COLON ; right_cons = INT ; RSQUARE ; {
+      ConstInfLeft {
+        right_cons = right_cons,
+        incl_right_cons = true
+      }
+    }
   (* ]--, m[ *)
-  | RSQUARE ; MINUS ; MINUS ; COLON ; right_cons = INT ; LSQUARE ; { ConstInfLeft { right_cons = right_cons, incl_right_cons = false } }
+  | RSQUARE ; MINUS ; MINUS ; COLON ; right_cons = INT ; LSQUARE ; {
+      ConstInfLeft {
+        right_cons = right_cons,
+        incl_right_cons = false
+      }
+    }
   (* ]--, ++[ *)
   | RSQUARE ; MINUS ; MINUS ; COLON ; PLUS ; PLUS ; LSQUARE ; { ConstInfBoth }
 

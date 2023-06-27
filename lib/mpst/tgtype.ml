@@ -16,7 +16,7 @@ type rec_var =
 [@@deriving sexp_of, eq]
 
 type t =
-  | MessageG of message * RoleName.t * RoleName.t * t
+  | MessageTG of message * RoleName.t * RoleName.t * t * ClockName * time_const * reset_clock
   | MuG of TypeVariableName.t * rec_var list * t
   | TVarG of TypeVariableName.t * Expr.t list * (t Lazy.t[@sexp.opaque])
   | ChoiceG of RoleName.t * t list
@@ -25,7 +25,7 @@ type t =
 [@@deriving sexp_of]
 
 let rec evaluate_lazy_gtype = function
-  | MessageG (m, r1, r2, g) -> MessageG (m, r1, r2, evaluate_lazy_gtype g)
+  | MessageTG (m, r1, r2, g, clock, time_const, reset_clock) -> MessageTG (m, r1, r2, evaluate_lazy_gtype g, clock, time_const, reset_clock)
   | MuG (tv, rv, g) -> MuG (tv, rv, evaluate_lazy_gtype g)
   | TVarG (tv, es, g) ->
       TVarG
