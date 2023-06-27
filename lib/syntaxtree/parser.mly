@@ -246,7 +246,7 @@ let time_global_message_transfer ==
 (* For time constraints *)
 let time_constraints ==
   (* [n, m] *)
-  | LSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; RSQUARE ; {
+  | LSQUARE ; left_cons = INT ; SEMICOLON ; right_cons = INT ; RSQUARE ; {
       ConstInt {
         left_cons = left_cons,
         incl_left_cons = true,
@@ -255,7 +255,7 @@ let time_constraints ==
       }
     }
   (* ]n, m] *)
-  | RSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; RSQUARE ; {
+  | RSQUARE ; left_cons = INT ; SEMICOLON ; right_cons = INT ; RSQUARE ; {
       ConstInt {
         left_cons = left_cons,
         incl_left_cons = false,
@@ -264,7 +264,7 @@ let time_constraints ==
       }
     }
   (* [n, m[ *)
-  | LSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; LSQUARE ; {
+  | LSQUARE ; left_cons = INT ; SEMICOLON ; right_cons = INT ; LSQUARE ; {
       ConstInt {
         left_cons = left_cons,
         incl_left_cons = true,
@@ -273,7 +273,7 @@ let time_constraints ==
       }
     }
   (* ]n, m[ *)
-  | RSQUARE ; left_cons = INT ; COLON ; right_cons = INT ; LSQUARE ; {
+  | RSQUARE ; left_cons = INT ; SEMICOLON ; right_cons = INT ; LSQUARE ; {
       ConstInt {
         left_cons = left_cons,
         incl_left_cons = false,
@@ -282,28 +282,28 @@ let time_constraints ==
       }
     }
   (* [n, ++[ *)
-  | LSQUARE ; left_cons = INT ; COLON ; PLUS ; PLUS ; LSQUARE ; {
+  | LSQUARE ; left_cons = INT ; SEMICOLON ; PLUS ; PLUS ; LSQUARE ; {
       ConstInfRight {
         left_cons = left_cons,
         incl_left_cons = true
       }
     }
   (* ]n, ++[ *)
-  | RSQUARE ; left_cons = INT ; COLON ; PLUS ; PLUS ; LSQUARE ; {
+  | RSQUARE ; left_cons = INT ; SEMICOLON ; PLUS ; PLUS ; LSQUARE ; {
       ConstInfRight {
         left_cons = left_cons,
         incl_left_cons = false
       }
     }
   (* ]--, m] *)
-  | RSQUARE ; MINUS ; MINUS ; COLON ; right_cons = INT ; RSQUARE ; {
+  | RSQUARE ; MINUS ; MINUS ; SEMICOLON ; right_cons = INT ; RSQUARE ; {
       ConstInfLeft {
         right_cons = right_cons,
         incl_right_cons = true
       }
     }
   (* ]--, m[ *)
-  | RSQUARE ; MINUS ; MINUS ; COLON ; right_cons = INT ; LSQUARE ; {
+  | RSQUARE ; MINUS ; MINUS ; SEMICOLON ; right_cons = INT ; LSQUARE ; {
       ConstInfLeft {
         right_cons = right_cons,
         incl_right_cons = false
