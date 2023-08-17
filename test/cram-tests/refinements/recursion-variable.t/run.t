@@ -18,7 +18,7 @@ The protocol with recursion variable should be well-formed.
   (check-sat)
   
   rec X [count<A>: int = 0] {
-    Num(curr: (curr:int{curr = count}) to B;
+    Num(curr: (curr:int{curr = count})) to B;
     continue X [count + 1];
   }
 
@@ -43,8 +43,8 @@ The protocol with recursion variable should be well-formed.
   (assert (>= count 0))
   (check-sat)
   
-  rec X [count<A>: (count:int{count >= 0} = 0] {
-    Num(curr: (curr:int{curr = count}) to B;
+  rec X [count<A>: (count:int{count >= 0}) = 0] {
+    Num(curr: (curr:int{curr = count})) to B;
     continue X [count + 1];
   }
 
@@ -53,13 +53,13 @@ When projected on B, the recursion variable `count` should not appear.
 
   $ nuscr Recursion.nuscr --project B@Recursion1
   rec X [(silent) count<A>: int = 0] {
-    Num(curr: (curr:int{curr = count}) from A;
+    Num(curr: (curr:int{curr = count})) from A;
     continue X;
   }
 
   $ nuscr Recursion.nuscr --project B@Recursion2
-  rec X [(silent) count<A>: (count:int{count >= 0} = 0] {
-    Num(curr: (curr:int{curr = count}) from A;
+  rec X [(silent) count<A>: (count:int{count >= 0}) = 0] {
+    Num(curr: (curr:int{curr = count})) from A;
     continue X;
   }
 

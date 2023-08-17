@@ -427,33 +427,32 @@ let validate_refinements_exn t =
   let encode_progress_clause env payloads =
     let e =
       List.fold ~init:(Expr.Sexp.Atom "true")
-        ~f:
-          (fun e -> function
-            | PValue (None, _) -> e
-            | PValue (Some v, ty) ->
-                let sort = Expr.smt_sort_of_type ty in
-                let e =
-                  match ty with
-                  | Expr.PTRefined (v_, _, refinement) ->
-                      if VariableName.equal v v_ then
-                        Expr.Sexp.List
-                          [ Expr.Sexp.Atom "and"
-                          ; Expr.sexp_of_expr refinement
-                          ; e ]
-                      else
-                        Err.violationf ~here:[%here]
-                          "TODO: Handle the case where refinement and \
-                           payload variables are different"
-                  | _ -> e
-                in
-                Expr.Sexp.List
-                  [ Expr.Sexp.Atom "exists"
-                  ; Expr.Sexp.List
-                      [ Expr.Sexp.List
-                          [ Expr.Sexp.Atom (VariableName.user v)
-                          ; Expr.Sexp.Atom sort ] ]
-                  ; e ]
-            | PDelegate _ -> (* Not supported *) e )
+        ~f:(fun e -> function
+          | PValue (None, _) -> e
+          | PValue (Some v, ty) ->
+              let sort = Expr.smt_sort_of_type ty in
+              let e =
+                match ty with
+                | Expr.PTRefined (v_, _, refinement) ->
+                    if VariableName.equal v v_ then
+                      Expr.Sexp.List
+                        [ Expr.Sexp.Atom "and"
+                        ; Expr.sexp_of_expr refinement
+                        ; e ]
+                    else
+                      Err.violationf ~here:[%here]
+                        "TODO: Handle the case where refinement and payload \
+                         variables are different"
+                | _ -> e
+              in
+              Expr.Sexp.List
+                [ Expr.Sexp.Atom "exists"
+                ; Expr.Sexp.List
+                    [ Expr.Sexp.List
+                        [ Expr.Sexp.Atom (VariableName.user v)
+                        ; Expr.Sexp.Atom sort ] ]
+                ; e ]
+          | PDelegate _ -> (* Not supported *) e )
         payloads
     in
     let env =
@@ -473,12 +472,13 @@ let validate_refinements_exn t =
       | CallG _ -> (* Not supported *) []
     in
     let first_messages = List.concat_map ~f:gather_first_message gs in
-    let encoded =
-      List.fold ~init:encoded ~f:encode_progress_clause first_messages
-    in
-    match Expr.check_sat encoded with
-    | `Unsat -> ()
-    | _ -> uerr StuckRefinement
+    if not (List.is_empty first_messages) then
+      let encoded =
+        List.fold ~init:encoded ~f:encode_progress_clause first_messages
+      in
+      match Expr.check_sat encoded with
+      | `Unsat -> ()
+      | _ -> uerr StuckRefinement
   in
   let rec aux env =
     ( if Pragma.validate_refinement_satisfiability () then
@@ -515,6 +515,7 @@ let validate_refinements_exn t =
           | PDelegate _ -> unimpl ~here:[%here] "Delegation as payload"
         in
         let env = List.fold ~init:env ~f payloads in
+        if Pragma.validate_refinement_progress () then ensure_progress env [g] ;
         aux env g
     | ChoiceG (_, gs) ->
         List.iter ~f:(aux env) gs ;
