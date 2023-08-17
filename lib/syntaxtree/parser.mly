@@ -243,6 +243,10 @@ let time_global_message_transfer ==
       }
   }
 
+(* For clock name *)
+let clockname ==
+  c = raw_name; { ClockName.create x (Loc.create $loc) }
+
 (* For time constraints *)
 let time_constraints ==
   (* [n, m] *)
@@ -316,7 +320,6 @@ let time_constraints ==
 let reset_clock ==
   | LPAR ; RPAR ; { NoReset }
   | LPAR ; clock = INT ; RPAR ; { ResetClock { clock = clock } }
-
 
 (* we have a qname because that's what fixme comments says in the
    Scribble parser *)

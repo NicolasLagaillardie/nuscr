@@ -88,6 +88,31 @@ type scr_module =
   ; protocols: global_protocol list }
 [@@deriving show {with_path= false}]
 
+(* Definition of time constraints *)
+type time_const =
+  | ConstInt of {
+      left_cons: int ;
+      incl_left_cons: bool ;
+      right_cons: int ;
+      incl_right_cons: bool ;
+    }
+  | ConstInfRight of {
+      left_cons: int ;
+      incl_left_cons: bool ;
+    }
+  | ConstInfLeft of {
+      right_cons: int ;
+      incl_right_cons: bool ;
+    }
+  | ConstInfBoth
+[@@deriving eq, ord, sexp_of, show]
+
+(* Definition of reset predicate *)
+type reset_clock =
+  | ResetClock of ClockName.t
+  | NoReset
+[@@deriving eq, ord, sexp_of, show]
+
 (* Timed interactions and global protocol *)
 type timed_global_interaction = timed_raw_global_interaction located
 [@@deriving show {with_path= false}, sexp_of]
@@ -98,7 +123,7 @@ and timed_raw_global_interaction =
         message: message ;
         from_role: RoleName.t ;
         to_roles: RoleName.t ;
-        clock: ClockName ;
+        clock: ClockName.t ;
         time_const: time_const ;
         reset_clock: reset_clock ;
       }

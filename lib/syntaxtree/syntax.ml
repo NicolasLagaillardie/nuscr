@@ -79,7 +79,7 @@ type message =
 [@@deriving eq, ord]
 
 (* Definition of time constraints *)
-type time_const = 
+type time_const =
   | ConstInt of {
       left_cons: int ;
       incl_left_cons: bool ;
@@ -98,12 +98,37 @@ type time_const =
 [@@deriving eq, ord]
 
 (* Definition of reset predicate *)
-type reset_clock = 
-  | ResetClock of {
-      clock: ClockName ;
-    }
+type reset_clock =
+  | ResetClock of ClockName.t
   | NoReset
 [@@deriving eq, ord]
+
+let show_reset_clock = function
+  | ResetClock c -> ClockName.user c
+  | NoReset -> sprintf ""
+
+let pp_reset_clock fmt c = Stdlib.Format.fprintf fmt "%s" (show_reset_clock c)
+
+let sexp_of_reset_clock c = Sexp.Atom (show_reset_clock c)
+
+(* Definition of time constraint *)
+type time_const =
+  | ConstInt of {
+      left_cons: int ;
+      incl_left_cons: bool ;
+      right_cons: int ;
+      incl_right_cons: bool ;
+    }
+  | ConstInfRight of {
+      left_cons: int ;
+      incl_left_cons: bool ;
+    }
+  | ConstInfLeft of {
+      right_cons: int ;
+      incl_right_cons: bool ;
+    }
+  | ConstInfBoth
+[@@deriving eq, ord, sexp_of, show]
 
 let show_message = function
   | Message {name; payload} ->
@@ -139,7 +164,7 @@ type global_interaction = raw_global_interaction located
 [@@deriving show {with_path= false}, sexp_of]
 
 and raw_global_interaction =
-| MessageTransfer of
+  | MessageTransfer of
     {
       message: message ;
       from_role: RoleName.t ;
@@ -177,6 +202,31 @@ type scr_module =
 [@@deriving show {with_path= false}]
 
 (* Timed interactions and global protocol *)
+type timed_global_interaction = timed_raw_global_interaction located
+[@@deriving show {with_path= false}, sexp_of]
+
+and timed_raw_global_interaction =
+  | TimeMessageTransfer of
+      {
+        message: message ;
+        from_role: RoleName.t ;
+        to_roles: RoleName.t list ;
+        clock: ClockName.t ;
+        time_const: time_const ;
+        reset_clock: reset_clock ;
+      }
+  (* recursion variable, protocol *)
+  | Recursion of TypeVariableName.t * rec_var list * timed_global_interaction list
+  | Continue of TypeVariableName.t * expr list
+  (* role, protocol options *)
+  | Choice of RoleName.t * timed_global_interaction list list
+  (* protocol * roles *)
+  | Do of ProtocolName.t * RoleName.t list * annotation option
+  (* caller * protocol * roles *)
+  | Calls of
+      RoleName.t * ProtocolName.t * RoleName.t list * annotation option
+[@@deriving show {with_path= false}]
+
 type timed_global_protocol = timed_raw_global_protocol located
 [@@deriving show {with_path= false}, sexp_of]
 
@@ -193,29 +243,4 @@ type timed_scr_module =
   { pragmas: Pragma.pragmas
   ; nested_protocols: timed_global_protocol list
   ; protocols: timed_global_protocol list }
-[@@deriving show {with_path= false}]
-
-type timed_global_interaction = timed_raw_global_interaction located
-[@@deriving show {with_path= false}, sexp_of]
-
-and timed_raw_global_interaction =
-  | TimeMessageTransfer of
-      {
-        message: message ;
-        from_role: RoleName.t ;
-        to_roles: RoleName.t list ;
-        clock: ClockName ;
-        time_const: time_const ;
-        reset_clock: reset_clock ;
-      }
-  (* recursion variable, protocol *)
-  | Recursion of TypeVariableName.t * rec_var list * timed_global_interaction list
-  | Continue of TypeVariableName.t * expr list
-  (* role, protocol options *)
-  | Choice of RoleName.t * timed_global_interaction list list
-  (* protocol * roles *)
-  | Do of ProtocolName.t * RoleName.t list * annotation option
-  (* caller * protocol * roles *)
-  | Calls of
-      RoleName.t * ProtocolName.t * RoleName.t list * annotation option
 [@@deriving show {with_path= false}]
